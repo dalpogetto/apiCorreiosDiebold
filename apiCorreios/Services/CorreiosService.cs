@@ -210,11 +210,15 @@ namespace apiCorreios.Services
             return precoResponse;
         }
 
-        public RastroResponse ObterRastreio(string listaObjetosSeparadosPorVirgula)
+        public IResult ObterRastreio(string listaObjetosSeparadosPorVirgula)
         {
 
             //atualiza token e outras infos
             this.AtualizarCorreiosToken();
+            if (_token == null)
+            {
+                return Results.NotFound("Origem:Correios, Token dos correios inválido");
+            }
 
             RastroResponse objResponse = null;
 
@@ -262,7 +266,7 @@ namespace apiCorreios.Services
                 //TODO: seu tratamento de erro aqui
             }
 
-            return objResponse;
+            return Results.Ok(objResponse);
         }
 
         public CalculoPrecoPrazoResponse CalcularPrecoPrazo(string cepOrigem, string cepDestino, List<Item> itens)
@@ -388,6 +392,7 @@ namespace apiCorreios.Services
             if (string.IsNullOrEmpty(correiosToken) || CorreiosTokenExpired(expiracaotokenUTC))
             {
                 var tokenResponse = this.ObterToken(_usuario, _codigoAcesso, _cartaoPostagem);
+                if (tokenResponse == null) return;
 
                 _token = tokenResponse.token;
                 _contrato = tokenResponse.cartaoPostagem.contrato;
